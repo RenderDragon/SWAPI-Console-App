@@ -26,7 +26,7 @@ namespace SWAPI_Console_App
         static async Task Main(string[] args)
         {
             // Console.WriteLine("Hello World!");
-            var SelectedPlanet = await ProcessPlanet(1);
+            /*var SelectedPlanet = await ProcessPlanet(1);
 
             Console.WriteLine(SelectedPlanet.Name + "\t" + SelectedPlanet.Climate);
 
@@ -34,6 +34,24 @@ namespace SWAPI_Console_App
             foreach(var Planet in AllPlanets)
             {
                 Console.WriteLine(Planet);
+            }*/
+            Console.Write("Input a planet ID, otherwise leave empty to show all planets. \t");
+            var PlanetID = Console.ReadLine();
+            int result;
+            if (int.TryParse(PlanetID, out result) && result > 0 && result < 61 )
+            {
+                var SelectedPlanet = await ProcessPlanet(int.Parse(PlanetID));
+                Console.WriteLine(SelectedPlanet.Name + "\t" + SelectedPlanet.Climate);
+            } else if (PlanetID == "")
+            {
+                var AllPlanets = await ProcessPlanets();
+                foreach (var Planet in AllPlanets)
+                {
+                    Console.WriteLine(Planet);
+                }
+            } else
+            {
+                Console.WriteLine("Not a valid input.");
             }
         }
 
@@ -50,13 +68,15 @@ namespace SWAPI_Console_App
         {
             var AllPlanets = new List<string>();
             client.DefaultRequestHeaders.Accept.Clear();
-            var streamTask = client.GetStreamAsync("https://swapi.dev/api/planets/");
-            var CurrentPlanets = await JsonSerializer.DeserializeAsync<Query>(await streamTask);
-            foreach (var planet in CurrentPlanets.Results)
+            for (var i = 1; i < 7; i++)
             {
-                AllPlanets.Add(planet.Name + "\t" + planet.Climate);
+                var Page = client.GetStreamAsync("https://swapi.dev/api/planets/?page=" + i);
+                var Results = JsonSerializer.DeserializeAsync<Query>(await Page);
+                foreach(var thing in Results.Result.Results)
+                {
+                    AllPlanets.Add(thing.Name + "\t" + thing.Climate);
+                }
             }
-
             return AllPlanets;
         }
     }

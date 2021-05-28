@@ -22,5 +22,21 @@ namespace SWAPI_Console_App
         [JsonPropertyName("results")]
         public List<Planet> Results { get; set; }
 
+        public class Enumerator
+        {
+            public Query Current { get; private set; }
+            public bool MoveNext()
+            {
+                if (this.Current == null)
+                {
+                    this.Current = new Query();
+                    return true;
+                }
+                this.Current = null;
+                return false;
+            }
+            public void Reset() { this.Current = null; }
+        }
+        public Enumerator GetEnumerator() { return new Enumerator(); }
     }
 }
