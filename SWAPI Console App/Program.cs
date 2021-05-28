@@ -26,19 +26,38 @@ namespace SWAPI_Console_App
         static async Task Main(string[] args)
         {
             // Console.WriteLine("Hello World!");
-            var SelectedPlanet = await ProcessPlanets();
+            var SelectedPlanet = await ProcessPlanet(1);
 
-            Console.WriteLine(SelectedPlanet.Name);
-            Console.WriteLine(SelectedPlanet.Climate);
+            Console.WriteLine(SelectedPlanet.Name + "\t" + SelectedPlanet.Climate);
+
+            var AllPlanets = await ProcessPlanets();
+            foreach(var Planet in AllPlanets)
+            {
+                Console.WriteLine(Planet);
+            }
         }
 
-        private static async Task<Planet> ProcessPlanets()
+        private static async Task<Planet> ProcessPlanet(int id)
         {
             client.DefaultRequestHeaders.Accept.Clear();
 
-            var streamTask = client.GetStreamAsync("https://swapi.dev/api/planets/1/");
+            var streamTask = client.GetStreamAsync("https://swapi.dev/api/planets/" + id.ToString() + "/");
             var SelectedPlanet = await JsonSerializer.DeserializeAsync<Planet>(await streamTask);
             return SelectedPlanet;
+        }
+
+        private static async Task<List<string>> ProcessPlanets()
+        {
+            var AllPlanets = new List<string>();
+            client.DefaultRequestHeaders.Accept.Clear();
+            var streamTask = client.GetStreamAsync("https://swapi.dev/api/planets/");
+            var CurrentPlanets = await JsonSerializer.DeserializeAsync<Query>(await streamTask);
+            foreach (var planet in CurrentPlanets.Results)
+            {
+                AllPlanets.Add(planet.Name + "\t" + planet.Climate);
+            }
+
+            return AllPlanets;
         }
     }
 }
